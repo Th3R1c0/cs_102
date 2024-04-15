@@ -1,8 +1,10 @@
 'use client';
+import useMembers from '@/hooks/members';
 import { DataContext } from '../layout';
 import Image from 'next/image';
 import Link from 'next/link';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useUser } from '@/hooks/user';
 const AdminDashboard = () => {
   const { members, setMembers, login, user } = useContext(DataContext);
   return (
@@ -26,8 +28,18 @@ const AdminDashboard = () => {
 };
 
 const UserDashboard = () => {
-  const { members, setMembers, login, user } = useContext(DataContext);
+  const [user, updateUser] = useUser();
   const [search, setSearch] = useState('');
+  
+  useEffect(() => {
+    console.log('from dashboard page.tsx: ', ' user is : ', user);
+  }, [user]); // Log user whenever it changes
+  
+  if (user === null) {
+    return null; // Render nothing or handle the case where user is null
+  }
+
+  // Assuming user data is fetched and available
   const filteredBooks = user.books?.filter((book) =>
     book.title.toLowerCase().includes(search.toLowerCase())
   );
@@ -175,11 +187,25 @@ const UserDashboard = () => {
           </div>
         </>
       )}
+      <div className='h-20 '>.</div>
+      <div className="fixed bottom-0 left-0 w-full p-2 bg-white  flex justify-around border-t-[1px] border-black">
+        <Link href='/dashboard'>dashboard</Link>
+        <Link href='/c'>catalogue</Link>
+      </div>
+
     </div>
   );
 };
 
 export default function Home() {
-  const { members, setMembers, login, user } = useContext(DataContext);
+  const [user, setUser] = useUser();
+
+  if (user === null) {
+    // Render a loading state or placeholder while user data is being fetched
+    return <div>logging in form home ...</div>
+  }
+
+
+  // Assuming user data is fetched and available
   return user.role === 'member' ? <UserDashboard /> : <AdminDashboard />;
 }

@@ -196,6 +196,11 @@ export default function Home() {
       ) : (
         ''
       )}
+      <div className='h-10'></div>
+            <div className="fixed bottom-0 left-0 w-full p-2 bg-white  flex justify-around border-t-[1px] border-black">
+  <Link href='/dashboard'>dashboard</Link>
+  <Link href='/c'>catalogue</Link>
+</div>
     </div>
   );
 }

@@ -5,10 +5,23 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useContext } from 'react';
 import { DataContext } from './layout';
+import useMembers from '@/hooks/members';
+import { useUser } from '@/hooks/user';
 export default function Home() {
   const [userlogin, setUserLogin] = useState({ username: '', password: '' });
   const router = useRouter();
-  const { login } = useContext(DataContext);
+  //const { login } = useContext(DataContext);
+  const [members, setMembers] = useMembers()
+  const [user, updateUser] = useUser()
+  const login = (email: string) => {
+    console.log('members is :', members)
+    const _user = members.find((m) => m.email === email);
+    console.log('searching is ', email, ' the same as ', members[0].email);
+    updateUser(_user);
+  };
+
+
+
   const loginUser = () => {
     login(userlogin.username);
     console.log('userlogin: ', userlogin.username);
