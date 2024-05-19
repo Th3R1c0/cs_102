@@ -12,10 +12,8 @@ export default function Home() {
       try {
         const response = await fetch('https://freetestapi.com/api/v1/books');
         const data = await response.json();
-        console.log(data);
         const filteredBook = data.find((b) => b.id === Number(id)); // Find book with matching title
         setBook(filteredBook); // Update state with filtered book
-        console.log(filteredBook);
       } catch (error) {
         console.error('Error fetching book data:', error);
       }

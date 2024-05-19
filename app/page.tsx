@@ -7,25 +7,22 @@ import { useState, useEffect, useContext } from 'react';
 import { DataContext } from './layout';
 import useMembers from '@/hooks/members';
 import { useUser } from '@/hooks/user';
+import { useDataStore } from '@/store/datastore';
+
+
+
 export default function Home() {
   const [userlogin, setUserLogin] = useState({ username: '', password: '' });
   const router = useRouter();
   //const { login } = useContext(DataContext);
-  const [members, setMembers] = useMembers()
-  const [user, updateUser] = useUser()
-  const login = (email: string) => {
-    console.log('members is :', members)
-    const _user = members.find((m) => m.email === email);
-    console.log('searching is ', email, ' the same as ', members[0].email);
-    updateUser(_user);
-  };
-
-
-
+  const login = useDataStore((state) => state.loginUser)
+  const loggedinUser = useDataStore((state) => state.loggedinUser)
   const loginUser = () => {
-    login(userlogin.username);
-    console.log('userlogin: ', userlogin.username);
-    router.push('dashboard');
+
+    login(userlogin.username, userlogin.password)
+    if (loggedinUser.user !== '') {
+      router.push('dashboard');
+    }
   };
   return (
     <div className="bg-blue-200 text-black h-screen w-full flex flex-col">
@@ -49,7 +46,7 @@ export default function Home() {
           <input
             className="p-4 text-black rounded-md"
             type="text"
-            value={login.username}
+            value={userlogin.username}
             onChange={(e) =>
               setUserLogin({ ...userlogin, username: e.target.value })
             }
@@ -58,7 +55,7 @@ export default function Home() {
           <input
             className="p-4 text-black rounded-md"
             type="password"
-            value={login.password}
+            value={userlogin.password}
             onChange={(e) =>
               setUserLogin({ ...userlogin, password: e.target.value })
             }

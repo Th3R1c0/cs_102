@@ -1,22 +1,36 @@
 'use client';
+import { useDataStore } from '@/store/datastore';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 export default function Home() {
   const [books, setBooks] = useState({ books: [], filter: [] });
   const [allGenres, setAllGenres] = useState([]);
   const [showAllGenres, setShowAllGenres] = useState(false);
   const [pagnationCount, setPagnationCount] = useState(10);
-  const [bookcache, setBookcache] = useState([]);
+  
+  const fetchBooks = useDataStore((state) => state.fetchbooks)
+  const b = useDataStore((state) => state.books)
+  const user = useDataStore((state) => state.loggedinUser)
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('https://freetestapi.com/api/v1/books');
-        const data = await response.json();
-
-        // Modify books directly to include received books
+        //fetches from this api as per below
+        // const response = await fetch('https://freetestapi.com/api/v1/books');
+        // const data = await response.json();
+        let data; 
+        console.log('back here to c, data is: ', data)
+        if (b.length === 0) {
+         data = await fetchBooks()
+          // Modify books directly to include received books
+          
+        } else {
+          data = b
+        }
+          //set books 
         setBooks((prevBooks) => ({ ...prevBooks, books: data }));
-
         const uniqueGenres = [];
         for (const book of data) {
           for (const genre of book.genre) {
@@ -26,7 +40,6 @@ export default function Home() {
           }
         }
         setAllGenres(uniqueGenres);
-        console.log(uniqueGenres);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -40,10 +53,11 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [GenreSearch, setGenreSearch] = useState('');
   const genres = showAllGenres ? allGenres : allGenres.slice(0, 3);
-  const filteredBooks = books?.books.filter((book) =>
+
+  // filteres books based on current book title being searched
+  const filteredBooks = books?.books.filter((book: any) =>
     book.title.toLowerCase().includes(search.toLowerCase())
   );
-
   // Function to filter books based on a genre
   const filterByGenre = (genre: string) => {
     setBooks((prevBooks) => ({
@@ -51,7 +65,6 @@ export default function Home() {
       filter: [...prevBooks.filter, genre], // Add genre to the filter array
     }));
   };
-
   // Function to clear the filter
   const clearFilter = () => {
     setBooks((prevBooks) => ({
@@ -59,20 +72,26 @@ export default function Home() {
       filter: [],
     }));
   };
-
   const pagnate = () => {
     if (pagnationCount !== books.length) {
       setPagnationCount((X) => X + 10);
     }
   };
 
-  const filteredBooksBygenre = books.books.filter((book) => {
+  //filter books by genre
+  const filteredBooksBygenre = books.books.filter((book: any) => {
     // Check if all selected genres are included in the book's genres
     const hasAllGenres = books.filter.every((genre) =>
       book.genre.includes(genre)
     );
     return books.filter.length === 0 || hasAllGenres;
   });
+
+
+  const router = useRouter()
+  const addBook = () => {
+    router.push('c/addbook')
+  }
   return (
     <div className="bg-blue-200 text-black w-full min-h-screen flex flex-col p-4 space-y-4">
       <div className="w-full h-max flex justify-between">
@@ -80,6 +99,10 @@ export default function Home() {
         <div>Catalogue</div>
         <div>menu</div>{' '}
       </div>
+      {user.role == 'admin' ? <>      <div className='w-full flex space-x-4'>
+        <div className='flex-1 bg-white rounded-md font-bold text-1xl text-center flex items-center justify-center p-2'>Edit books</div>
+        <div className='flex-1 bg-white rounded-md font-bold text-1xl text-center flex items-center justify-center p-2' onClick={addBook}>Add book</div>
+      </div></> : ''}
       <input
         type="text"
         placeholder="search all books"
@@ -93,13 +116,14 @@ export default function Home() {
             onClick={() => filterByGenre(genre)}
             key={index}
             className={`rounded-lg text-center p-2 overflow-hidden truncate font-bold bg-${
-              books.filter.includes(genre) ? 'gray' : 'white'
+              books.filter.includes(genre) ? 'grey-500' : 'white'
             } text-black whitespace-nowrap`}
           >
             {genre}
           </div>
         ))}
       </div>
+      
       <div className="flex items-center justify-center">
         <div className="text-gray font-sm underline flex space-x-2">
           <div onClick={() => setShowAllGenres(!showAllGenres)}>
@@ -113,10 +137,11 @@ export default function Home() {
           )}
         </div>{' '}
       </div>
+
       {!search == '' ? (
         <div className="flex flex-col space-y-4">
           <div>search results</div>
-          <div>
+          <div className='flex flex-col space-y-4'>
             {filteredBooks ? (
               filteredBooks.map((book, index) => {
                 return (
@@ -141,6 +166,7 @@ export default function Home() {
                           ))}
                         </div>
                       </div>
+                      <p className="mt-4 text-gray-700">{book.description}</p>
                     </div>
                     {/* <img
              className="w-20 h-20 rounded-full ml-4 object-cover"
